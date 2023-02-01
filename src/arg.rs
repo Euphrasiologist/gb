@@ -28,17 +28,63 @@ const SUMMARY: &str = "summary";
 pub enum Summary {
     Mean,
     N,
+    StdDev,
+    Var,
+}
+
+impl Summary {
+    pub fn inner_fn(&self, list: &[f64]) -> Option<f64> {
+        match self {
+            Summary::Mean => Self::mean(list),
+            Summary::N => Some(list.len() as f64),
+            Summary::StdDev => Self::std_deviation(list),
+            Summary::Var => Self::std_deviation(list).map(|e| e.powf(2.0)),
+        }
+    }
+
+    fn std_deviation(list: &[f64]) -> Option<f64> {
+        match (Self::mean(list), list.len()) {
+            (Some(list_mean), count) if count > 0 => {
+                let variance = list
+                    .iter()
+                    .map(|value| {
+                        let diff = list_mean - *value;
+
+                        diff * diff
+                    })
+                    .sum::<f64>()
+                    / count as f64;
+
+                Some(variance.sqrt())
+            }
+            _ => None,
+        }
+    }
+
+    fn mean(list: &[f64]) -> Option<f64> {
+        let sum = list.iter().sum::<f64>();
+        let count = list.len();
+
+        match count {
+            positive if positive > 0 => Some(sum / count as f64),
+            _ => None,
+        }
+    }
 }
 
 impl ValueEnum for Summary {
     fn value_variants<'a>() -> &'a [Self] {
-        &[Summary::Mean, Summary::N]
+        &[Summary::Mean, Summary::N, Summary::StdDev, Summary::Var]
     }
 
     fn to_possible_value<'a>(&self) -> Option<PossibleValue> {
         Some(match self {
             Summary::Mean => PossibleValue::new("mean").help("Calculate mean on groups"),
             Summary::N => PossibleValue::new("N").help("Calculate number in each group"),
+            Summary::StdDev => {
+                PossibleValue::new("sd").help("Calculate standard deviation on each group")
+            }
+            Summary::Var => PossibleValue::new("var").help("Calculate variance on each group"),
         })
     }
 }
@@ -185,7 +231,7 @@ enum Error {}
 fn parse_keys(string: &str) -> Result<Vec<String>, Error> {
     let mut res = Vec::new();
 
-    for predicate in string.split(",") {
+    for predicate in string.split(',') {
         let predicate = predicate.trim();
 
         res.push(predicate.to_string());

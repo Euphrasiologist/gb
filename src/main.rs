@@ -70,7 +70,8 @@ fn main() -> Result<()> {
 
     println!("{}\tN", args.keys.join(&args.delimiter.to_string()));
     for (k, v) in map {
-        println!("{}\t{}", k.join(&args.delimiter.to_string()), v.len())
+        let summary = arg::Summary::inner_fn(&args.function, &v);
+        println!("{}\t{:?}", k.join(&args.delimiter.to_string()), summary)
     }
 
     Ok(())
