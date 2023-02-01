@@ -114,7 +114,8 @@ impl FromStr for Summary {
 // the usage
 const USAGE: &str = "\
     gb [OPTIONS] <FILE/STDIN>
-    gb -f field1 -k key1,key2 -s N input.tsv";
+    gb -f field1 -k key1,key2 -s N -i input.tsv
+    cat input.csv | gb -f field1 -k key1 -s mean -d,";
 
 const TEMPLATE: &str = "\
 {bin} {version}
@@ -177,6 +178,7 @@ fn app() -> Command {
 
 fn arg_input() -> Arg {
     Arg::new(INPUT)
+        .short('i')
         .long(INPUT)
         .default_value("-")
         .num_args(1)
@@ -187,6 +189,7 @@ fn arg_input() -> Arg {
 
 fn arg_keys() -> Arg {
     Arg::new(KEYS)
+        .short('k')
         .long(KEYS)
         .required(true)
         .num_args(1..)
@@ -197,6 +200,7 @@ fn arg_keys() -> Arg {
 
 fn arg_field() -> Arg {
     Arg::new(FIELD)
+        .short('f')
         .long(FIELD)
         .required(true)
         .num_args(1)
@@ -207,6 +211,7 @@ fn arg_field() -> Arg {
 
 fn arg_delimiter() -> Arg {
     Arg::new(DELIMITER)
+        .short('d')
         .long(DELIMITER)
         .default_value("\t")
         .num_args(1)
@@ -217,6 +222,7 @@ fn arg_delimiter() -> Arg {
 
 fn arg_summary() -> Arg {
     Arg::new(SUMMARY)
+        .short('s')
         .long(SUMMARY)
         .default_value("N")
         .num_args(1)
